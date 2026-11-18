@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>SkillCompass: Job Market Intelligence</title>
+<style>
+:root{--bg:#f5f7fc;--surface:#fff;--text:#12182b;--muted:#5b6785;--accent:#0f9d8a;--accent2:#d99a06;--line:#dde3f0;--bar:#0f9d8a;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0b1226;--surface:#16213f;--text:#eef2ff;--muted:#97a5c8;--accent:#2dd4bf;--accent2:#fbbf24;--line:#26345e;--bar:#2dd4bf;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0b1226;--surface:#16213f;--text:#eef2ff;--muted:#97a5c8;--accent:#2dd4bf;--accent2:#fbbf24;--line:#26345e;--bar:#2dd4bf;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,"Segoe UI",system-ui,sans-serif;line-height:1.5}
+header{position:sticky;top:env(safe-area-inset-top,0px);background:var(--bg);border-bottom:1px solid var(--line);z-index:5}
+nav{max-width:1000px;margin:auto;padding:12px 20px;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+nav b{margin-right:auto;font-size:18px}nav b span{color:var(--accent)}
+nav a{color:var(--muted);text-decoration:none;padding:6px 12px;border-radius:20px;font-size:14px}
+nav a.on,nav a:hover{background:var(--surface);color:var(--text)}
+main{max-width:1000px;margin:auto;padding:28px 20px 60px}
+section{display:none}section.on{display:block}
+h1{font-size:clamp(30px,5vw,48px);line-height:1.1;margin:10px 0 12px}h2{margin:0 0 6px}
+p.sub{color:var(--muted);margin:0 0 20px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:18px;margin-bottom:16px}
+.grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+.stat b{font-size:26px;display:block;color:var(--accent)}.stat span{color:var(--muted);font-size:14px}
+.btn{display:inline-block;background:var(--accent);color:#06201c;border:0;padding:11px 20px;border-radius:12px;font-weight:700;cursor:pointer;text-decoration:none;font-size:15px;margin:0 8px 8px 0}
+.btn.alt{background:transparent;color:var(--text);border:1px solid var(--line)}
+label{display:block;font-size:13px;color:var(--muted);margin:10px 0 4px}
+select,input,textarea{width:100%;background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:10px;padding:10px;font:inherit}
+.note{font-size:13px;color:var(--muted);border-left:3px solid var(--accent2);padding-left:10px;margin-top:12px}
+.row{display:flex;align-items:center;gap:10px;margin:7px 0;font-size:14px}.row span:first-child{width:110px;flex:none}
+.track{flex:1;background:var(--bg);border-radius:6px;height:18px;overflow:hidden}.fill{height:100%;background:var(--bar);border-radius:6px;transition:width .5s}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+.chip{background:var(--bg);border:1px solid var(--accent);color:var(--text);padding:4px 10px;border-radius:20px;font-size:13px;cursor:pointer}
+.chip.miss{border-color:var(--accent2)}.chip.ok::after{content:" ✓"}.chip.x::after{content:" ×";color:var(--muted)}
+.big{font-size:34px;font-weight:800;color:var(--accent)}
+.two{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
+footer{text-align:center;color:var(--muted);font-size:12px;padding:0 20px 30px}
+</style>
+</head>
+<body>
+<header><nav>
+<b>Skill<span>Compass</span></b>
+<a href="#home">Home</a><a href="#market">Market</a><a href="#salary">Salary</a><a href="#resume">Resume</a><a href="#gap">Skill gap</a><a href="#about">Method</a>
+</nav></header>
+<main>
+ 
+<section id="home">
+<p style="color:var(--accent);font-weight:700;margin:0">FOR INDIA’S TECH JOB SEEKERS</p>
+<h1>Know your market value<br>before you apply.</h1>
+<p class="sub">Explore hiring demand, estimate a salary range, and see which skills stand between you and your target role.</p>
+<a class="btn" href="#salary">Estimate my salary</a><a class="btn alt" href="#resume">Analyze my resume</a>
+<div class="grid" style="margin-top:22px">
+<div class="card stat"><b id="hRole">Data Analyst</b><span id="hRoleL">Most-posted role (sample data)</span></div>
+<div class="card stat"><b id="hCity">Bengaluru</b><span id="hCityL">Most postings by city (sample data)</span></div>
+<div class="card stat"><b id="hSal">₹6–16 LPA</b><span id="hSalL">Typical sample salary range</span></div>
+</div>
+<p class="note" id="hNote">Prototype: all figures here are illustrative sample data, not real market statistics. The full project would load a licensed job-posting dataset.</p>
+</section>
+ 
+<section id="market">
+<h2>Market explorer</h2><p class="sub">Job postings by city, filtered by role and work mode.</p>
+<div class="card">
+<div class="two"><div><label>Role</label><select id="mRole"></select></div>
+<div><label>Work mode</label><select id="mMode"><option>All</option><option>On-site</option><option>Hybrid</option><option>Remote</option></select></div></div>
+<h3 style="margin-top:20px">Postings by city</h3><div id="cityBars"></div>
+<h3 style="margin-top:20px">Top skills in demand for this role</h3><div id="skillBars"></div>
+<p class="note" id="mNote">Sample dataset: 1,000 illustrative postings, Jan–Jun 2025 (not real). The live version shows the real dataset’s date range and coverage here.</p>
+</div>
+</section>
+ 
+<section id="salary">
+<h2>Salary estimator</h2><p class="sub">An indicative range from posted salaries, not a guaranteed offer.</p>
+<div class="two">
+<div class="card">
+<label>Role</label><select id="sRole"></select>
+<label>City</label><select id="sCity"></select>
+<label>Experience (years): <b id="expV">2</b></label><input type="range" id="sExp" min="0" max="15" value="2">
+<label>Work mode</label><select id="sMode"><option>On-site</option><option>Hybrid</option><option>Remote</option></select>
+<div id="eduWrap" style="display:none"><label>Education</label><select id="sEdu"></select></div>
+<label>Skills (from your Resume page, or edit there)</label><div class="chips" id="sSkills"></div>
+</div>
+<div class="card"><p style="margin:0;color:var(--muted)">Estimated annual salary</p>
+<div class="big" id="sOut">–</div><div id="sMid" style="color:var(--muted)"></div><div id="sWarn"></div>
+<div class="note" id="sNote">Illustrative formula for this prototype. The real system compares Linear Regression, Decision Tree, Random Forest and Gradient Boosting using MAE, RMSE and R². The range is a plain ±15% band, not a statistical confidence interval.</div></div>
+</div>
+</section>
+ 
+<section id="resume">
+<h2>Resume analyzer</h2><p class="sub">Upload your resume as a PDF or paste resume text.</p>
+<div class="card">
+<label for="rFile">Upload resume (PDF only)</label>
+<input type="file" id="rFile" accept=".pdf" style="display:block;width:100%;padding:8px;margin:6px 0 10px;background:var(--surface,#16213f);border:1px solid var(--line,#26345e);border-radius:6px;color:#eef2ff">
+<div id="rErr" style="display:none;color:#f87171;font-size:13px;margin:-4px 0 10px;font-weight:500"></div>
+<textarea id="rText" rows="6" placeholder="Paste your resume text here, e.g. 'Built ML models in Python using scikit-learn and pandas, dashboards in Power BI, SQL on PostgreSQL…'"></textarea>
+<div style="margin-top:10px"><button class="btn" id="extract">Extract skills</button><button class="btn alt" id="demo">Use sample resume</button></div>
+<h3>Detected skills <small style="color:var(--muted);font-weight:400">(click to remove)</small></h3>
+<div class="chips" id="rChips"><span style="color:var(--muted)">None yet</span></div>
+<div style="display:flex;gap:8px"><input id="addSkill" placeholder="Add a missed skill…" list="dict"><button class="btn" id="addBtn" style="margin:0">Add</button></div>
+<datalist id="dict"></datalist>
+<p class="note">Keyword matching can miss synonyms and context, and presence of a keyword doesn’t prove competence. Review and correct the list. Scanned PDFs need OCR. Resumes aren’t stored.</p>
+</div>
+</section>
+ 
+<section id="gap">
+<h2>Skill gap analysis</h2><p class="sub">Compare your skills with the skills most requested for a target role.</p>
+<div class="card"><label>Target role</label><select id="gRole"></select>
+<div class="big" id="gScore" style="margin-top:12px">–</div><div id="gFormula" style="color:var(--muted);font-size:14px"></div>
+<h3>Matched</h3><div class="chips" id="gMatch"></div>
+<h3>Missing or not evident</h3><div class="chips" id="gMiss"></div>
+<h3>Learning suggestions</h3><ul id="gSug" style="color:var(--muted)"></ul>
+<p class="note">Match score = matched skills ÷ the role’s top required skills. These are suggestions, not hiring guarantees.</p></div>
+</section>
+ 
+<section id="about">
+<h2>Method &amp; limitations</h2>
+<div class="card"><ul>
+<li><b>Data:</b> a documented, permitted job-posting dataset; source, access date and license recorded. Prototype uses sample data only.</li>
+<li><b>Salary target:</b> valid salary records only, normalized to INR per annum.</li>
+<li><b>Models:</b> regression pipeline with ColumnTransformer, trained on the training split only, evaluated on a held-out set with cross-validation.</li>
+<li><b>Resume NLP:</b> curated skill dictionary and alias matching; results are user-reviewable.</li>
+<li><b>Limits:</b> postings may be biased or outdated; disclosed salaries don’t represent every employee; no sensitive personal attributes are used.</li>
+<li><b>Privacy:</b> resumes are processed transiently and never stored in this prototype.</li>
+</ul></div>
+</section>
+</main>
+<footer>SkillCompass prototype · not real market data · built from the AI Job Market Intelligence project requirements</footer>
+ 
+<script>
+const ROLES={
+"Data Analyst":{base:7,w:1,skills:["sql","excel","power bi","python","tableau","statistics","data visualization","pandas"]},
+"Data Scientist":{base:12,w:.7,skills:["python","machine learning","sql","statistics","pandas","scikit-learn","deep learning","data visualization"]},
+"ML Engineer":{base:15,w:.45,skills:["python","machine learning","deep learning","tensorflow","pytorch","docker","sql","aws"]},
+"Python Developer":{base:8,w:.85,skills:["python","django","flask","sql","git","rest api","docker","aws"]},
+"Full Stack Developer":{base:10,w:.9,skills:["javascript","react","node.js","sql","git","rest api","docker","html"]}};
+const CITY={"Bengaluru":[1.12,1],"Hyderabad":[1.05,.68],"Pune":[1,.6],"Mumbai":[1.03,.55],"Delhi NCR":[1.02,.72],"Chennai":[.97,.45]};
+const MODE={"All":1,"On-site":.55,"Hybrid":.3,"Remote":.15};
+const ALIAS={"ml":"machine learning","sklearn":"scikit-learn","postgres":"sql","postgresql":"sql","mysql":"sql","js":"javascript","nodejs":"node.js","powerbi":"power bi","dl":"deep learning","tf":"tensorflow","restful":"rest api","visualisation":"data visualization","data visualisation":"data visualization"};
+const DICT=[...new Set(Object.values(ROLES).flatMap(r=>r.skills))].sort();
+const TIPS={"sql":"Practice joins and window functions on a public dataset","excel":"Build a pivot-table dashboard from a sample sheet","power bi":"Publish a small sales dashboard","python":"Complete a pandas data-cleaning project","tableau":"Recreate a public Tableau story","statistics":"Review hypothesis testing and regression basics","data visualization":"Make 5 charts that each answer one question","pandas":"Clean a messy CSV end to end","machine learning":"Train and compare 3 models on a Kaggle dataset","scikit-learn":"Build a pipeline with ColumnTransformer","deep learning":"Train a small neural net on image data","tensorflow":"Follow an official beginner tutorial","pytorch":"Re-implement a simple classifier","docker":"Containerize one of your projects","aws":"Deploy a small app on a free tier","django":"Build a CRUD app with auth","flask":"Create a small REST API","git":"Use branches and pull requests on a repo","rest api":"Build and document a FastAPI endpoint","javascript":"Build an interactive page without a framework","react":"Create a small app with state and routing","node.js":"Write an Express API","html":"Rebuild a landing page by hand"};
+let skills=[];
+const $=id=>document.getElementById(id);
+const fill=(sel,arr)=>{sel.innerHTML=arr.map(a=>`<option>${a}</option>`).join("")};
+["mRole","sRole","gRole"].forEach(i=>fill($(i),Object.keys(ROLES)));
+fill($("sCity"),Object.keys(CITY));
+$("dict").innerHTML=DICT.map(d=>`<option value="${d}">`).join("");
+ 
+function route(){let h=location.hash.slice(1);if(!$(h))h="home";
+document.querySelectorAll("section").forEach(s=>s.classList.toggle("on",s.id===h));
+document.querySelectorAll("nav a").forEach(a=>a.classList.toggle("on",a.getAttribute("href")==="#"+h));
+window.scrollTo(0,0)}
+addEventListener("hashchange",route);route();
+ 
+function bars(el,rows,max,suffix){el.innerHTML=rows.map(([n,v])=>`<div class="row"><span>${n}</span><div class="track"><div class="fill" style="width:${v/max*100}%"></div></div><span style="width:50px;text-align:right">${suffix?Math.round(v)+suffix:Math.round(v)}</span></div>`).join("")}
+function marketLocal(){const r=ROLES[$("mRole").value]||ROLES["Data Analyst"],m=MODE[$("mMode").value];
+const rows=Object.entries(CITY).map(([c,[,d]])=>[c,d*r.w*m*320]).sort((a,b)=>b[1]-a[1]);
+bars($("cityBars"),rows,rows[0][1]);
+bars($("skillBars"),r.skills.map((s,i)=>[s,92-i*8]),92,"%")}
+["mRole","mMode"].forEach(i=>$(i).onchange=market);market();
+ 
+function chipsSelected(){$("sSkills").innerHTML=skills.length?skills.map(s=>`<span class="chip">${s}</span>`).join(""):'<span style="color:var(--muted)">No skills yet</span>'}
+function salaryLocal(){const r=ROLES[$("sRole").value]||ROLES["Data Analyst"],e=+$("sExp").value;$("expV").textContent=e;
+const rel=skills.filter(s=>r.skills.includes(s)).length,bonus=1+Math.min(rel*.02,.12);
+const mid=r.base*(1+.13*e)*(CITY[$("sCity").value]||[1])[0]*bonus*($("sMode").value==="Remote"?1.03:1);
+const lo=mid*.85,hi=mid*1.15,f=x=>x.toFixed(1);
+$("sOut").textContent=`₹${f(lo)}–${f(hi)} LPA`;
+$("sMid").textContent=`Midpoint ≈ ₹${f(mid)} LPA · ${rel} role-relevant skill${rel===1?"":"s"} counted`;chipsSelected()}
+var MKT=null,mtmr=null;
+function market(){if(!MKT){marketLocal();return}clearTimeout(mtmr);mtmr=setTimeout(marketApi,100)}
+async function marketApi(){try{const q=new URLSearchParams({mode:$("mMode").value});if($("mRole").value)q.set("role",$("mRole").value);
+const r=await fetch("/api/market?"+q);if(!r.ok)throw new Error("api");const d=await r.json();
+const rows=d.cities.map(c=>[c.city,c.n]);bars($("cityBars"),rows,Math.max(1,...rows.map(x=>x[1])));
+bars($("skillBars"),d.skills.map(s=>[s.skill,s.pct]),Math.max(1,...d.skills.map(s=>s.pct)),"%");
+const mk=MKT.market;$("mNote").textContent=`${d.n.toLocaleString()} postings match`+(d.median_lpa!=null?` · median salary ₹${d.median_lpa.toFixed(1)} LPA (${d.n_salary.toLocaleString()} with a valid salary)`:"")+
+`. Source: ${MKT.data_label} · ${mk.n_postings.toLocaleString()} postings, ${mk.date_range[0]} to ${mk.date_range[1]}.`+(MKT.synthetic?" Synthetic practice data, not real market statistics.":"")}
+catch(e){MKT=null;marketLocal()}}
+var MODEL=null,tmr=null;
+function salary(){$("expV").textContent=$("sExp").value;chipsSelected();
+if(!MODEL){salaryLocal();return}
+clearTimeout(tmr);tmr=setTimeout(callApi,150)}
+async function callApi(){
+const body={role:$("sRole").value,location:$("sCity").value,experience:+$("sExp").value,work_mode:$("sMode").value,
+education:$("eduWrap").style.display==="none"?null:$("sEdu").value,skills:skills};
+try{const r=await fetch("/api/predict",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});
+if(!r.ok)throw new Error("api");const d=await r.json(),f=x=>(x/1e5).toFixed(1);
+$("sOut").textContent=`₹${f(d.low)}–${f(d.high)} LPA`;
+$("sMid").textContent=`Point estimate ≈ ₹${f(d.point)} LPA · model: ${d.model}`;
+$("sWarn").replaceChildren(...d.warnings.map(w=>{const n=document.createElement("div");n.className="note";n.textContent=w;return n}))}
+catch(e){MODEL=null;$("sWarn").replaceChildren();salaryLocal()}}
+["sRole","sCity","sExp","sMode","sEdu"].forEach(i=>$(i).oninput=salary);
+ 
+function norm(t){return " "+t.toLowerCase().replace(/[^a-z0-9+#.\s]/g," ")+" "}
+function extract(){const t=norm($("rText").value);const found=new Set();
+const terms=[...DICT.map(d=>[d,d]),...Object.entries(ALIAS)];
+terms.forEach(([a,s])=>{if(t.includes(" "+a+" "))found.add(s)});
+skills=[...found].sort();update()}
+function update(){$("rChips").innerHTML=skills.length?skills.map(s=>`<span class="chip x" data-s="${s}">${s}</span>`).join(""):'<span style="color:var(--muted)">None found. Try adding skills manually.</span>';
+document.querySelectorAll("#rChips .chip").forEach(c=>c.onclick=()=>{skills=skills.filter(s=>s!==c.dataset.s);update()});
+salary();gap()}
+$("extract").onclick=extract;
+const rFile=$("rFile"),rErr=$("rErr");
+if(rFile){
+rFile.onchange=async()=>{
+if(rErr){rErr.style.display="none";rErr.textContent="";}
+const f=rFile.files[0];
+if(!f){
+if(rErr){rErr.textContent="No file selected. Please select a PDF file.";rErr.style.display="block";}
+return;
+}
+const isPdfExt=f.name.toLowerCase().endsWith(".pdf");
+const isPdfMime=f.type==="application/pdf";
+if(!isPdfExt||!isPdfMime){
+rFile.value="";
+if(rErr){rErr.textContent="Please upload your resume as a PDF.";rErr.style.display="block";}
+return;
+}
+if(f.size===0){
+rFile.value="";
+if(rErr){rErr.textContent="The uploaded PDF file is empty. Please upload a valid resume.";rErr.style.display="block";}
+return;
+}
+if(f.size>10*1024*1024){
+rFile.value="";
+if(rErr){rErr.textContent="File too large. Maximum file size is 10 MB.";rErr.style.display="block";}
+return;
+}
+const fd=new FormData();
+fd.append("file",f);
+try{
+const res=await fetch("/api/resume",{method:"POST",body:fd});
+if(!res.ok){
+const errData=await res.json().catch(()=>({}));
+rFile.value="";
+if(rErr){rErr.textContent=errData.detail||"Please upload your resume as a PDF.";rErr.style.display="block";}
+return;
+}
+const data=await res.json();
+if(data.text){
+$("rText").value=data.text;
+extract();
+}
+}catch(e){
+if(rErr){rErr.textContent="Failed to upload resume. Please try again.";rErr.style.display="block";}
+}
+};
+}
+$("demo").onclick=()=>{$("rText").value="Data analyst with 2 years of experience. Built dashboards in Power BI and Tableau, wrote complex SQL on PostgreSQL, automated reports in Excel and Python (pandas). Applied statistics for A/B testing. Currently learning ML with sklearn.";extract()};
+$("addBtn").onclick=()=>{const v=$("addSkill").value.trim().toLowerCase();if(v&&!skills.includes(v)){skills.push(v);skills.sort();update()}$("addSkill").value=""};
+ 
+async function gap(){
+const role=$("gRole").value;
+if(!role){$("gScore").textContent="–";$("gFormula").textContent="Select a target role.";return}
+let refSkills=[];
+try{
+const res=await fetch("/api/role-skills?role="+encodeURIComponent(role));
+if(res.ok){
+const d=await res.json();
+if(!d.sufficient_data){
+$("gScore").textContent="–";
+$("gFormula").textContent=d.message||"Insufficient data for this role.";
+$("gMatch").innerHTML="—";
+$("gMiss").innerHTML="—";
+$("gSug").innerHTML="";
+return;
+}
+refSkills=d.skills||[];
+}
+}catch(e){}
+if(!refSkills.length){
+const r=ROLES[role];
+if(r)refSkills=r.skills;
+}
+if(!refSkills.length)return;
+const candLower=skills.map(s=>s.toLowerCase());
+const ok=refSkills.filter(s=>candLower.includes(s.toLowerCase()));
+const miss=refSkills.filter(s=>!candLower.includes(s.toLowerCase()));
+const score=Math.round(ok.length/refSkills.length*100);
+$("gScore").textContent=skills.length?score+"% match":"–";
+$("gFormula").textContent=skills.length?`${ok.length} matched ÷ ${refSkills.length} top skills for ${role} = ${score}% match`:"Upload a PDF resume or extract skills on the Resume page first.";
+$("gMatch").innerHTML=ok.map(s=>`<span class="chip ok">✓ ${s}</span>`).join("")||"—";
+$("gMiss").innerHTML=miss.map(s=>`<span class="chip miss">! ${s}</span>`).join("")||"None, great coverage!";
+$("gSug").innerHTML=skills.length?miss.slice(0,5).map(s=>`<li><b>${s}:</b> ${TIPS[s.toLowerCase()]||"Build a hands-on project or review best practices in "+s}</li>`).join(""):""}
+$("gRole").onchange=gap;
+update();
+ 
+fetch("/api/meta").then(r=>r.ok?r.json():null).then(m=>{if(!m)return;MODEL=m;
+const opt=(id,arr)=>{const el=$(id);el.replaceChildren(...arr.map(a=>{const o=document.createElement("option");o.textContent=a;return o}))};
+const hide=(id)=>{const el=$(id);el.style.display="none";if(el.previousElementSibling)el.previousElementSibling.style.display="none"};
+if(m.features.includes("role")&&m.roles.length)opt("sRole",m.roles);else hide("sRole");
+if(m.features.includes("location")&&m.locations.length)opt("sCity",m.locations);else hide("sCity");
+if(m.features.includes("work_mode")&&m.work_modes.length)opt("sMode",m.work_modes);else hide("sMode");
+if(m.features.includes("education")&&m.educations.length){opt("sEdu",m.educations);$("eduWrap").style.display=""}
+if(!m.features.includes("experience")){hide("sExp")}else if(m.exp_max)$("sExp").max=Math.max(15,Math.ceil(m.exp_max));
+if(m.market){MKT=m;$("mRole").replaceChildren(...["",...m.market.roles].map(r=>{const o=document.createElement("option");o.value=r;o.textContent=r||"All roles";return o}));market()}
+if(m.roles&&m.roles.length){opt("gRole",m.roles);gap()}
+if(m.home){$("hRole").textContent=m.home.top_role;$("hCity").textContent=m.home.top_city;
+$("hSal").textContent=`₹${m.home.salary_p25.toFixed(0)}–${m.home.salary_p75.toFixed(0)} LPA`;
+$("hRoleL").textContent="Most-posted role (dataset)";$("hCityL").textContent="Most postings by city (dataset)";$("hSalL").textContent="Middle 50% of valid posted salaries";
+$("hNote").textContent=`Home and Market figures come from ${m.data_label||"the loaded dataset"}`+(m.synthetic?". It is synthetic practice data, not real market statistics":"")+". The Resume and Skill gap pages still use built-in demo data."}
+$("sNote").textContent=m.note;salary()}).catch(()=>{});
+</script>
+</body>
+</html>

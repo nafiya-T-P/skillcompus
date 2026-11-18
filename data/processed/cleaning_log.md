@@ -1,0 +1,12 @@
+# Cleaning log: india_job_market_messy_31150_records.csv
+
+| Step | Rows before | Rows after | What was done |
+|---|---:|---:|---|
+| 1. Load raw data | 31,150 | 31,150 | 20 columns, 28,198 missing cells |
+| 2. Standardize categorical labels | 31,150 | 31,150 | cells changed per column: job_title: 80; city: 362; experience_level: 358; employment_type: 368; work_mode: 364 |
+| 3. Remove exact duplicate rows | 31,150 | 30,250 | 900 rows removed |
+| 4. Remove near-duplicate postings | 30,250 | 30,000 | 250 removed (same job_title, company_name, city, posted_date, salary_min_lpa, salary_max_lpa, skills_required; different ID/URL) |
+| 5. Parse posted_date | 30,000 | 30,000 | 0 unparseable; range 2024-01-01 to 2026-10-31 |
+| 6. Validate experience_years | 30,000 | 30,000 | 40 implausible values (outside 0-30: [-2.0, 35.0, 50.0, 99.0]) set to blank; original kept in experience_years_raw |
+| 7. Validate salary and build target | 30,000 | 17,378 | target = (min+max)/2 for rows with both bounds, min>0, max>=min, not an outlier. Valid: 17,378. Flagged (kept, not trained on): {'salary missing or one bound only': 12531, 'non-positive salary': 35, 'outlier (mid > 60 LPA)': 31, 'max below min': 25} |
+| 8. Missing values | 30,000 | 30,000 | no rows dropped for missingness. At model time: experience -> median, categories -> 'Unknown', skills -> none |
